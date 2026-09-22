@@ -525,7 +525,7 @@ function PemilihTab() {
     setError(null);
     const nisn = form.nisn.trim();
     if (!isValidNisn(nisn)) {
-      setError("NISN harus 10 digit angka (contoh 0103150447). Leading zero akan dijaga.");
+      setError("NISN harus 10 digit angka (contoh 0100000000). Leading zero akan dijaga.");
       return;
     }
     const res = await fetch("/api/admin/voters", {
@@ -592,7 +592,7 @@ function PemilihTab() {
         <div className="bg-white border border-slate-100 shadow-sm rounded-2xl p-5 space-y-4">
           <div>
             <h2 className="font-bold text-slate-800 flex items-center gap-2">👤 Tambah 1 Pemilih</h2>
-            <p className="text-xs text-slate-500">NISN 10 digit, leading zero aman (contoh 0103150447)</p>
+            <p className="text-xs text-slate-500">NISN 10 digit, leading zero aman (contoh 0100000000)</p>
           </div>
           <form onSubmit={handleAddOne} className="space-y-3">
             <div>
@@ -689,9 +689,9 @@ function PemilihTab() {
             <div className="grid gap-2 text-xs font-mono mt-2">
               <div className="bg-white border rounded px-2 py-1.5">
                 <span className="font-bold text-emerald-700">Dapodik (langsung):</span> No | Nama | NIPD | JK | NISN <br />
-                <span className="text-slate-500">Contoh: 1 | ABIL PRIO PRADENSYAH | 3797 | L | 103150447 → jadi 0103150447</span>
+                <span className="text-slate-500">Contoh: 1 | ABIL PRIO PRADENSYAH | 3797 | L | 100000000 → jadi 0100000000</span>
               </div>
-              <div className="bg-white border rounded px-2 py-1.5">Template: nisn | name → 0103150447 | Budi</div>
+              <div className="bg-white border rounded px-2 py-1.5">Template: nisn | name → 0100000000 | Budi</div>
             </div>
             <p className="text-[11px] text-slate-500 mt-2">Baris 1-4 (Peserta Didik, SMAN 1 RAMBUTAN, Tanggal Unduh) otomatis di-skip. NIPD/JK diabaikan. Duplikat &amp; 9-digit auto pad ke 10.</p>
           </div>

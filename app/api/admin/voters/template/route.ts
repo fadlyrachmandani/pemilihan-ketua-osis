@@ -3,7 +3,7 @@ import * as XLSX from "xlsx";
 
 export async function GET() {
   const data = [
-    { nisn: "0103150447", name: "Budi Santoso" },
+    { nisn: "0100000000", name: "Budi Santoso" },
     { nisn: "0103150448", name: "Siti Aminah" },
     { nisn: "0103150449", name: "Rudi Hartono" },
   ];

@@ -45,7 +45,7 @@ async function main() {
   if (existingVoters === 0) {
     await prisma.voter.createMany({
       data: [
-        { nisn: "0103150447", name: "Contoh Siswa 1" },
+        { nisn: "0100000000", name: "Contoh Siswa 1" },
         { nisn: "0103150448", name: "Contoh Siswa 2" },
         { nisn: "0103150449", name: "Contoh Siswa 3" },
       ],

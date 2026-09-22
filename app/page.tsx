@@ -50,7 +50,7 @@ export default function VoterPage() {
     e.preventDefault();
     const val = nisn.trim();
     if (!/^\d{10}$/.test(val)) {
-      setError("NISN harus 10 digit angka (contoh 0103150447).");
+      setError("NISN harus 10 digit angka (contoh 0100000000).");
       return;
     }
     setError(null);
@@ -217,13 +217,13 @@ export default function VoterPage() {
                   setNisn(v);
                   if (error) setError(null);
                 }}
-                placeholder="0103150447"
+                placeholder="0100000000"
                 inputMode="numeric"
                 className={`w-full border rounded-xl px-4 py-3.5 text-center text-xl tracking-[0.25em] font-mono bg-slate-50/60 focus:bg-white focus:outline-none focus:ring-2 placeholder:tracking-normal placeholder:text-base ${error ? "border-red-300 focus:ring-red-200" : isNisnValid ? "border-emerald-300 focus:ring-emerald-200" : "border-slate-200 focus:ring-blue-200"}`}
                 maxLength={10}
               />
               <p className="text-[11px] text-slate-400 mt-2 text-center">
-                {nisn.length}/10 digit • Contoh: <span className="font-mono text-slate-600">0103150447</span>
+                {nisn.length}/10 digit • Contoh: <span className="font-mono text-slate-600">0100000000</span>
               </p>
             </div>
           </div>

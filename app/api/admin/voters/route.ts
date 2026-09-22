@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     );
   }
   if (!/^\d{10}$/.test(nisn)) {
-    return NextResponse.json({ message: "NISN harus 10 digit angka (contoh 0103150447)." }, { status: 400 });
+    return NextResponse.json({ message: "NISN harus 10 digit angka (contoh 0100000000)." }, { status: 400 });
   }
 
   try {

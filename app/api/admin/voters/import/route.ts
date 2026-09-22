@@ -17,7 +17,7 @@ function normalizeNisn(raw: any): string {
   const digits = s.replace(/\D/g, "");
   if (!digits) return "";
   if (digits.length < 10) {
-    // pad untuk kasus 103150447 -> 0103150447 (kehilangan leading 0 di Excel numeric)
+    // pad untuk kasus 100000000 -> 0100000000 (kehilangan leading 0 di Excel numeric)
     return digits.padStart(10, "0");
   }
   // jika lebih dari 10 digit ambil 10 terakhir? tidak, biarkan validasi yang tangkap
@@ -188,7 +188,7 @@ export async function POST(req: NextRequest) {
       continue;
     }
     if (!/^\d{10}$/.test(nisn)) {
-      invalid.push({ row: excelRow, reason: `Baris ${excelRow}: NISN "${String(nisnRaw).trim()}" → "${nisn}" harus 10 digit angka (contoh 0103150447)`, nisnRaw: String(nisnRaw), nameRaw: String(nameRaw) });
+      invalid.push({ row: excelRow, reason: `Baris ${excelRow}: NISN "${String(nisnRaw).trim()}" → "${nisn}" harus 10 digit angka (contoh 0100000000)`, nisnRaw: String(nisnRaw), nameRaw: String(nameRaw) });
       continue;
     }
     if (!name || name.length < 2) {

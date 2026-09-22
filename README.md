@@ -9,7 +9,7 @@ pemilih berikutnya.
 
 **Halaman Pemilih `/`**
 - Judul resmi pemilihan
-- Input **NISN 10 digit** (contoh `0103150447`, leading zero dijaga) — sekali pakai, dicocokkan ke data impor admin
+- Input **NISN 10 digit** (contoh `0100000000`, leading zero dijaga) — sekali pakai, dicocokkan ke data impor admin
 - Layar konfirmasi identitas ("Kamu [Nama] — benar?") sebelum masuk ke halaman voting
 - Tampilan foto + visi misi tiap paslon
 - Tombol pilih dengan konfirmasi, otomatis reset untuk pemilih berikutnya
@@ -48,7 +48,7 @@ npx prisma migrate deploy  # jika DB baru, atau migrate dev saat development
 npm run seed
 ```
 
-`seed.ts` akan membuat 3 paslon contoh dan 3 pemilih contoh (NISN: `0103150447`, `0103150448`, `0103150449`) —
+`seed.ts` akan membuat 3 paslon contoh dan 3 pemilih contoh (NISN: `0100000000`, `0103150448`, `0103150449`) —
 edit/hapus datanya nanti lewat dashboard admin. Migrasi `20260923_rename_nis_to_nisn` sudah handle rename kolom `nis`→`nisn`.
 
 ## 3. Jalankan di Lokal
@@ -69,7 +69,7 @@ npm run dev
 ## 5. Alur Hari-H
 
 1. Buka halaman utama (`/`) di 8 laptop yang jadi "bilik suara"
-2. Siswa datang bergantian, masukkan **NISN 10 digit**-nya sendiri (contoh `0103150447`)
+2. Siswa datang bergantian, masukkan **NISN 10 digit**-nya sendiri (contoh `0100000000`)
 3. Sistem tampilkan konfirmasi nama ("Kamu [Nama] — benar?") — siswa konfirmasi
 4. Pilih paslon → konfirmasi → suara tercatat, NISN tersebut otomatis terkunci (tidak bisa dipakai vote lagi)
 5. Layar otomatis kembali ke halaman input NISN untuk siswa berikutnya

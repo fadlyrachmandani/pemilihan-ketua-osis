@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     );
   }
   if (!/^\d{10}$/.test(nisn)) {
-    return NextResponse.json({ message: "NISN harus 10 digit (contoh 0103150447)." }, { status: 400 });
+    return NextResponse.json({ message: "NISN harus 10 digit (contoh 0100000000)." }, { status: 400 });
   }
 
   const settings = await prisma.electionSettings.findUnique({ where: { id: 1 } });
