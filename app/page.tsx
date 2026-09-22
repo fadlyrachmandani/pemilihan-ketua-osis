@@ -36,7 +36,9 @@ export default function VoterPage() {
       } catch {}
     }
     checkResults();
-    const id = setInterval(checkResults, 10000);
+    const id = setInterval(() => {
+      if (document.visibilityState === "visible") checkResults();
+    }, 15000);
     return () => { cancelled = true; clearInterval(id); };
   }, []);
 

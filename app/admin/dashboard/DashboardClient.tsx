@@ -119,8 +119,13 @@ function RingkasanTab() {
 
   useEffect(() => {
     load();
-    const interval = setInterval(load, 5000);
-    return () => clearInterval(interval);
+    // kurangi polling 5→10 detik + pause saat tab tidak terlihat (hemat DB & kurangi delay terasa)
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") load();
+    }, 10000);
+    const onVis = () => { if (document.visibilityState === "visible") load(); };
+    document.addEventListener("visibilitychange", onVis);
+    return () => { clearInterval(interval); document.removeEventListener("visibilitychange", onVis); };
   }, [load]);
 
   if (!summary) return <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"><div className="h-28 bg-white rounded-2xl animate-pulse border" /><div className="h-28 bg-white rounded-2xl animate-pulse border" /><div className="h-28 bg-white rounded-2xl animate-pulse border" /><div className="h-28 bg-white rounded-2xl animate-pulse border" /></div>;
@@ -426,8 +431,12 @@ function HasilTab() {
 
   useEffect(() => {
     load();
-    const interval = setInterval(load, 5000);
-    return () => clearInterval(interval);
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") load();
+    }, 10000);
+    const onVis = () => { if (document.visibilityState === "visible") load(); };
+    document.addEventListener("visibilitychange", onVis);
+    return () => { clearInterval(interval); document.removeEventListener("visibilitychange", onVis); };
   }, [load]);
 
   async function toggleVisible() {

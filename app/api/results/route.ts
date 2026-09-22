@@ -32,10 +32,12 @@ export async function GET() {
   }));
 
   const totalVotes = results.reduce((s, r) => s + r.voteCount, 0);
-  const totalVoters = await prisma.voter.count();
-  const votedCount = await prisma.voter.count({ where: { hasVoted: true } });
+  const [totalVoters, votedCount] = await Promise.all([
+    prisma.voter.count(),
+    prisma.voter.count({ where: { hasVoted: true } }),
+  ]);
 
-  return NextResponse.json({
+  const res = NextResponse.json({
     resultVisible: true,
     results,
     totalVotes,
@@ -43,4 +45,6 @@ export async function GET() {
     votedCount,
     notVotedCount: totalVoters - votedCount,
   });
+  res.headers.set("Cache-Control", "public, max-age=3, s-maxage=3, stale-while-revalidate=5");
+  return res;
 }

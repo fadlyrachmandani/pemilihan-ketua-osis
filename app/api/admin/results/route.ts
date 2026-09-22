@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isAdminAuthenticated } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   if (!isAdminAuthenticated()) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -22,8 +24,10 @@ export async function GET() {
     voteCount: c._count.votes,
   }));
 
-  return NextResponse.json({
+  const res = NextResponse.json({
     results,
     resultVisible: settings?.resultVisible ?? false,
   });
+  res.headers.set("Cache-Control", "private, max-age=2, stale-while-revalidate=4");
+  return res;
 }

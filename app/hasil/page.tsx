@@ -47,8 +47,12 @@ export default function HasilPage() {
 
   useEffect(() => {
     if (!autoRefresh || visible === false) return;
-    const id = setInterval(load, 5000);
-    return () => clearInterval(id);
+    const id = setInterval(() => {
+      if (document.visibilityState === "visible") load();
+    }, 8000);
+    const onVis = () => { if (document.visibilityState === "visible") load(); };
+    document.addEventListener("visibilitychange", onVis);
+    return () => { clearInterval(id); document.removeEventListener("visibilitychange", onVis); };
   }, [load, autoRefresh, visible]);
 
   const sorted = [...results].sort((a, b) => b.voteCount - a.voteCount);
