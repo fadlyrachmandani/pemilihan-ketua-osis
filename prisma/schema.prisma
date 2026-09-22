@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // connection pooling (dipakai saat aplikasi jalan)
+  directUrl = env("DIRECT_URL")   // koneksi langsung (dipakai khusus saat migrate)
+}
+
+// Data siswa pemilih. Diidentifikasi langsung pakai NISN (10 digit, string supaya leading 0 tidak hilang).
+model Voter {
+  id        String   @id @default(cuid())
+  nisn      String   @unique
+  name      String
+  hasVoted  Boolean  @default(false)
+  votedAt   DateTime?
+  createdAt DateTime @default(now())
+}
+
+// Pasangan calon (paslon)
+model Candidate {
+  id          String   @id @default(cuid())
+  number      Int      @unique // nomor urut paslon
+  chairName   String   // nama calon ketua
+  viceName    String   // nama calon wakil ketua
+  photoUrl    String?
+  vision      String   @db.Text
+  mission     String   @db.Text
+  createdAt   DateTime @default(now())
+
+  votes Vote[]
+}
+
+// Suara masuk. Sengaja TIDAK menyimpan voterId supaya suara tetap anonim -
+// status "sudah memilih" dicatat terpisah di kolom Voter.hasVoted.
+model Vote {
+  id          String   @id @default(cuid())
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id])
+  createdAt   DateTime  @default(now())
+}
+
+// Pengaturan pemilihan (mis. toggle tampil/sembunyikan hasil ke publik)
+model ElectionSettings {
+  id            Int     @id @default(1)
+  resultVisible Boolean @default(false)
+  votingOpen    Boolean @default(true)
+}
