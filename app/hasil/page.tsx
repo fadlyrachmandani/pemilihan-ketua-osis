@@ -15,9 +15,11 @@ type Result = {
 export default function HasilPage() {
   const [results, setResults] = useState<Result[]>([]);
   const [visible, setVisible] = useState<boolean | null>(null);
+  const [isComplete, setIsComplete] = useState(false);
   const [totalVotes, setTotalVotes] = useState(0);
   const [totalVoters, setTotalVoters] = useState(0);
   const [votedCount, setVotedCount] = useState(0);
+  const [notVotedCount, setNotVotedCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(true);
 
@@ -25,14 +27,24 @@ export default function HasilPage() {
     try {
       const res = await fetch("/api/results", { cache: "no-store" });
       const data = await res.json();
+      // API selalu kirim totalVoters/votedCount bahkan saat belum reveal
+      setTotalVoters(data.totalVoters ?? 0);
+      setVotedCount(data.votedCount ?? 0);
+      setNotVotedCount(data.notVotedCount ?? 0);
+      setIsComplete(!!data.isComplete);
       if (data.resultVisible) {
         setVisible(true);
         setResults(data.results || []);
         setTotalVotes(data.totalVotes ?? 0);
-        setTotalVoters(data.totalVoters ?? 0);
-        setVotedCount(data.votedCount ?? 0);
+      } else if (data.isComplete) {
+        // auto-reveal saat 100% — meski resultVisible false, tetap tampilkan hasil
+        setVisible(true);
+        setResults(data.results || []);
+        setTotalVotes(data.totalVotes ?? 0);
       } else {
         setVisible(false);
+        setResults([]);
+        setTotalVotes(0);
       }
     } catch {
       // ignore
@@ -46,22 +58,25 @@ export default function HasilPage() {
   }, [load]);
 
   useEffect(() => {
-    if (!autoRefresh || visible === false) return;
+    if (!autoRefresh) return;
     const id = setInterval(() => {
       if (document.visibilityState === "visible") load();
-    }, 8000);
+    }, 5000);
     const onVis = () => { if (document.visibilityState === "visible") load(); };
     document.addEventListener("visibilitychange", onVis);
     return () => { clearInterval(id); document.removeEventListener("visibilitychange", onVis); };
-  }, [load, autoRefresh, visible]);
+  }, [load, autoRefresh]);
 
   const sorted = [...results].sort((a, b) => b.voteCount - a.voteCount);
   const winner = sorted[0];
   const maxVotes = winner?.voteCount ?? 0;
+  const isRevealed = visible === true;
 
   const title =
     process.env.NEXT_PUBLIC_ELECTION_TITLE ||
     "Pemilihan Ketua OSIS dan Wakil Ketua OSIS SMAN 1 Rambutan Periode 2026-2027";
+
+  const pctPartisipasi = totalVoters ? Math.round((votedCount / totalVoters) * 100) : 0;
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/40 to-indigo-50">
@@ -85,11 +100,19 @@ export default function HasilPage() {
       <div className="max-w-6xl mx-auto px-4 py-8 md:py-10">
         <div className="text-center max-w-3xl mx-auto mb-8">
           <div className="inline-flex items-center gap-2 bg-white border border-blue-100 rounded-full px-4 py-1.5 shadow-sm mb-3">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs font-bold tracking-widest uppercase text-slate-600">Hasil Resmi • Transparan</span>
+            <span className={`h-2 w-2 rounded-full ${isRevealed ? "bg-emerald-500 animate-pulse" : "bg-amber-500 animate-pulse"}`} />
+            <span className="text-xs font-bold tracking-widest uppercase text-slate-600">
+              {isRevealed ? (isComplete ? "Hasil Resmi • 100% Selesai" : "Hasil Resmi • Transparan") : "Pemungutan Suara Berlangsung"}
+            </span>
           </div>
           <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900 leading-tight">{title}</h1>
-          <p className="text-sm text-slate-500 mt-2">Hasil diperbarui otomatis tiap 5 detik setelah panitia klik “Tampilkan Hasil”.</p>
+          <p className="text-sm text-slate-500 mt-2">
+            {isRevealed
+              ? isComplete
+                ? "Semua pemilih sudah menggunakan hak pilih — hasil otomatis ditampilkan."
+                : "Hasil diperbarui otomatis tiap 5 detik."
+              : "Hasil perolehan suara akan tampil otomatis saat semua pemilih selesai atau panitia klik “Tampilkan Hasil”."}
+          </p>
         </div>
 
         {loading ? (
@@ -98,25 +121,88 @@ export default function HasilPage() {
               <div key={i} className="h-64 bg-white border border-slate-100 rounded-2xl animate-pulse" />
             ))}
           </div>
-        ) : visible === false ? (
-          <div className="bg-white border border-amber-200 rounded-2xl p-8 md:p-12 text-center shadow-sm max-w-2xl mx-auto">
-            <div className="mx-auto h-16 w-16 rounded-2xl bg-amber-100 flex items-center justify-center text-3xl">🔒</div>
-            <h2 className="text-xl font-extrabold text-slate-900 mt-4">Hasil Disembunyikan</h2>
-            <p className="text-sm text-slate-500 mt-2 max-w-md mx-auto">
-              Panitia belum mengumumkan hasil. Halaman ini akan otomatis menampilkan perolehan suara setelah panitia klik <span className="font-semibold text-slate-700">“Tampilkan Hasil”</span> di dashboard.
-            </p>
-            <div className="mt-6 flex justify-center gap-2">
-              <button onClick={load} className="bg-[#1d4ed8] text-white rounded-full px-5 py-2 text-sm font-bold">
-                Cek Lagi
-              </button>
-              <Link href="/" className="bg-white border border-slate-200 rounded-full px-5 py-2 text-sm font-semibold">
-                Ke Halaman Voting
-              </Link>
+        ) : !isRevealed ? (
+          <>
+            {/* Fase voting: tampilkan progres partisipasi, jangan bocorkan voteCount */}
+            <div className="max-w-2xl mx-auto space-y-4">
+              <div className="bg-white border border-slate-100 rounded-2xl p-6 md:p-8 shadow-sm text-center">
+                <div className="mx-auto h-16 w-16 rounded-2xl bg-blue-50 flex items-center justify-center text-3xl">🗳️</div>
+                <h2 className="text-xl font-extrabold text-slate-900 mt-4">Pemungutan Suara Berlangsung</h2>
+                <p className="text-sm text-slate-500 mt-2">
+                  Pantau progres kehadiran pemilih secara live. Perolehan suara tiap paslon <span className="font-semibold text-slate-700">disembunyikan</span> sampai semua selesai.
+                </p>
+
+                <div className="mt-6 bg-slate-50 border border-slate-200 rounded-2xl p-5 text-left">
+                  <div className="flex justify-between items-end gap-3">
+                    <div>
+                      <p className="text-xs font-bold tracking-widest uppercase text-slate-400">Sudah Memilih</p>
+                      <p className="text-3xl font-black text-slate-900 mt-1">
+                        {votedCount} <span className="text-lg font-semibold text-slate-500">/ {totalVoters}</span>
+                      </p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        {notVotedCount > 0 ? `${notVotedCount} belum memilih` : totalVoters === 0 ? "Belum ada data pemilih" : "Semua sudah memilih!"}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-3xl font-black text-[#1d4ed8]">{pctPartisipasi}%</p>
+                      <p className="text-xs font-semibold text-slate-500">partisipasi</p>
+                    </div>
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-3 mt-4 overflow-hidden">
+                    <div className="bg-gradient-to-r from-emerald-500 to-[#1d4ed8] h-3 rounded-full transition-all duration-700" style={{ width: `${pctPartisipasi}%` }} />
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-2 text-center">
+                    Update otomatis tiap 5 detik • {votedCount} dari {totalVoters} pemilih
+                  </p>
+                </div>
+
+                {totalVoters > 0 && (
+                  <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+                    <div className="bg-emerald-50 border border-emerald-100 rounded-xl py-3">
+                      <p className="text-lg font-black text-emerald-700">{votedCount}</p>
+                      <p className="text-[11px] font-bold tracking-widest uppercase text-emerald-600">Sudah</p>
+                    </div>
+                    <div className="bg-amber-50 border border-amber-100 rounded-xl py-3">
+                      <p className="text-lg font-black text-amber-700">{notVotedCount}</p>
+                      <p className="text-[11px] font-bold tracking-widest uppercase text-amber-600">Belum</p>
+                    </div>
+                    <div className="bg-slate-50 border border-slate-200 rounded-xl py-3">
+                      <p className="text-lg font-black text-slate-700">{totalVoters}</p>
+                      <p className="text-[11px] font-bold tracking-widest uppercase text-slate-500">Total</p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-6 flex justify-center gap-2">
+                  <button onClick={load} className="bg-[#1d4ed8] text-white rounded-full px-5 py-2 text-sm font-bold">
+                    🔄 Refresh Progres
+                  </button>
+                  <Link href="/" className="bg-white border border-slate-200 rounded-full px-5 py-2 text-sm font-semibold">
+                    Ke Halaman Voting
+                  </Link>
+                </div>
+                <p className="text-[11px] text-slate-400 mt-4">Hasil 3 paslon dengan foto & persentase akan muncul otomatis saat {totalVoters ? `${totalVoters - votedCount} pemilih lagi` : "100%"} selesai.</p>
+              </div>
+
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex gap-3 items-start">
+                <span className="text-xl">🔒</span>
+                <div>
+                  <p className="text-sm font-bold text-amber-900">Hasil Per Paslon Disembunyikan</p>
+                  <p className="text-xs text-amber-800/80 mt-1">Demi kerahasiaan, foto dan persentase 3 paslon baru tampil ketika partisipasi 100% atau panitia mengumumkan hasil.</p>
+                </div>
+              </div>
             </div>
-            <p className="text-[11px] text-slate-400 mt-6">Auto-refresh aktif — halaman akan update sendiri ketika hasil dibuka.</p>
-          </div>
+          </>
         ) : (
           <>
+            {/* Auto-reveal banner jika karena 100% */}
+            {isComplete && (
+              <div className="max-w-3xl mx-auto mb-6 bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3 flex items-center justify-center gap-2 text-sm text-emerald-800">
+                <span className="h-2 w-2 bg-emerald-500 rounded-full animate-pulse" />
+                <span className="font-semibold">Semua {totalVoters} pemilih sudah memilih — hasil otomatis ditampilkan</span>
+              </div>
+            )}
+
             {/* Summary */}
             <div className="grid gap-4 sm:grid-cols-3 mb-6">
               <div className="bg-white border border-slate-100 rounded-2xl p-5 flex items-center gap-3 shadow-sm">
@@ -131,7 +217,7 @@ export default function HasilPage() {
                 <div>
                   <p className="text-xs font-bold tracking-widest uppercase text-slate-400">Partisipasi</p>
                   <p className="text-2xl font-extrabold text-slate-900">{votedCount} <span className="text-sm font-normal text-slate-500">/ {totalVoters}</span></p>
-                  <p className="text-xs text-slate-500">{totalVoters ? Math.round((votedCount / totalVoters) * 100) : 0}%</p>
+                  <p className="text-xs text-slate-500">{pctPartisipasi}% {isComplete && <span className="text-emerald-600 font-bold">• 100% Selesai</span>}</p>
                 </div>
               </div>
               <div className="bg-white border border-slate-100 rounded-2xl p-5 flex items-center gap-3 shadow-sm">
