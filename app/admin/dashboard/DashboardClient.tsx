@@ -451,6 +451,7 @@ function HasilTab() {
   }
 
   const totalVotes = results.reduce((sum, r) => sum + r.voteCount, 0);
+  const sortedPreview = [...results].sort((a,b)=>b.voteCount-a.voteCount);
 
   return (
     <div className="space-y-4">
@@ -459,21 +460,42 @@ function HasilTab() {
           <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${visible ? "bg-emerald-100" : "bg-amber-100"}`}>{visible ? "👁️" : "🙈"}</div>
           <div>
             <p className="font-bold text-slate-800">Status hasil untuk publik</p>
-            <p className={`text-sm ${visible ? "text-emerald-600" : "text-amber-600"}`}>{visible ? "Ditampilkan — semua orang bisa melihat" : "Disembunyikan — hanya panitia"}</p>
+            <p className={`text-sm ${visible ? "text-emerald-600" : "text-amber-600"}`}>{visible ? "Ditampilkan — semua orang bisa melihat di /hasil + pop-up di /" : "Disembunyikan — hanya panitia"}</p>
           </div>
         </div>
-        <button
-          onClick={toggleVisible}
-          disabled={saving}
-          className={`rounded-full px-5 py-2.5 text-sm font-bold disabled:opacity-50 ${visible ? "bg-amber-500 hover:bg-amber-600 text-white" : "bg-emerald-600 hover:bg-emerald-700 text-white"}`}
-        >
-          {visible ? "Sembunyikan Hasil" : "Tampilkan Hasil"}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={toggleVisible}
+            disabled={saving}
+            className={`rounded-full px-5 py-2.5 text-sm font-bold disabled:opacity-50 ${visible ? "bg-amber-500 hover:bg-amber-600 text-white" : "bg-emerald-600 hover:bg-emerald-700 text-white"}`}
+          >
+            {visible ? "Sembunyikan Hasil" : "Tampilkan Hasil"}
+          </button>
+          {visible && (
+            <a href="/hasil" target="_blank" className="bg-[#1d4ed8] hover:bg-[#1e3a8a] text-white rounded-full px-5 py-2.5 text-sm font-bold whitespace-nowrap">
+              Buka /hasil →
+            </a>
+          )}
+        </div>
       </div>
+      {visible && (
+        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-start gap-3">
+          <span className="text-lg">✅</span>
+          <div className="text-sm">
+            <p className="font-bold text-emerald-900">Hasil sekarang publik</p>
+            <p className="text-emerald-800/80 text-xs mt-1">
+              Publik di <code className="bg-white border px-1 rounded">/hasil</code> lihat 3 paslon + foto + <code className="bg-white border px-1 rounded">voteCount</code> + <code className="bg-white border px-1 rounded">pct%</code> + podium. Di halaman voting <code className="bg-white border px-1 rounded">/</code> muncul <b>pop-up otomatis</b> dengan ringkasan yang sama — ada tombol <b>Buka Halaman Lengkap /hasil →</b>.
+            </p>
+            <div className="flex gap-2 mt-2">
+              <a href="/hasil" target="_blank" className="text-xs bg-white border border-emerald-300 text-emerald-700 rounded-full px-3 py-1 font-semibold">Buka /hasil (tab baru)</a>
+              <a href="/" target="_blank" className="text-xs bg-white border border-slate-200 rounded-full px-3 py-1 font-semibold">Cek pop-up di /</a>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white border border-slate-100 shadow-sm rounded-2xl divide-y">
-        {results
-          .sort((a, b) => b.voteCount - a.voteCount)
+        {sortedPreview
           .map((r, idx) => {
             const pct = totalVotes > 0 ? Math.round((r.voteCount / totalVotes) * 100) : 0;
             const rank = idx === 0 && totalVotes > 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `#${idx + 1}`;
@@ -497,7 +519,7 @@ function HasilTab() {
         {results.length === 0 && (
           <p className="p-8 text-center text-slate-500">Belum ada paslon atau belum ada suara masuk.</p>
         )}
-        {totalVotes > 0 && <div className="p-4 text-center text-xs text-slate-500">Total {totalVotes} suara • Update otomatis tiap 5 detik</div>}
+        {totalVotes > 0 && <div className="p-4 text-center text-xs text-slate-500">Total {totalVotes} suara • Preview sama seperti di /hasil & pop-up / • <a href="/hasil" target="_blank" className="underline text-[#1d4ed8]">Buka /hasil</a></div>}
       </div>
     </div>
   );

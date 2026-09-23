@@ -15,6 +15,15 @@ type Candidate = {
 
 type Stage = "nisn" | "confirm" | "vote" | "done" | "closed";
 
+type PublicResult = {
+  id: string;
+  number: number;
+  chairName: string;
+  viceName: string;
+  photoUrl: string | null;
+  voteCount: number;
+};
+
 export default function VoterPage() {
   const [stage, setStage] = useState<Stage>("nisn");
   const [nisn, setNisn] = useState("");
@@ -25,6 +34,14 @@ export default function VoterPage() {
   const [selected, setSelected] = useState<Candidate | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [resultVisible, setResultVisible] = useState(false);
+  // popup hasil 3 paslon
+  const [popupResults, setPopupResults] = useState<PublicResult[]>([]);
+  const [popupTotalVotes, setPopupTotalVotes] = useState(0);
+  const [popupTotalVoters, setPopupTotalVoters] = useState(0);
+  const [popupVotedCount, setPopupVotedCount] = useState(0);
+  const [popupIsComplete, setPopupIsComplete] = useState(false);
+  const [showResultPopup, setShowResultPopup] = useState(false);
+  const [hasAutoShown, setHasAutoShown] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -32,7 +49,20 @@ export default function VoterPage() {
       try {
         const res = await fetch("/api/results", { cache: "no-store" });
         const data = await res.json();
-        if (!cancelled) setResultVisible(!!data.resultVisible);
+        if (cancelled) return;
+        const visible = !!data.resultVisible;
+        setResultVisible(visible);
+        if (visible) {
+          setPopupResults(data.results || []);
+          setPopupTotalVotes(data.totalVotes ?? 0);
+          setPopupTotalVoters(data.totalVoters ?? 0);
+          setPopupVotedCount(data.votedCount ?? 0);
+          setPopupIsComplete(!!data.isComplete);
+          if (!hasAutoShown) {
+            setShowResultPopup(true);
+            setHasAutoShown(true);
+          }
+        }
       } catch {}
     }
     checkResults();
@@ -40,7 +70,7 @@ export default function VoterPage() {
       if (document.visibilityState === "visible") checkResults();
     }, 15000);
     return () => { cancelled = true; clearInterval(id); };
-  }, []);
+  }, [hasAutoShown]);
 
   const title =
     process.env.NEXT_PUBLIC_ELECTION_TITLE ||
@@ -182,9 +212,14 @@ export default function VoterPage() {
             <p className="text-emerald-800 font-medium flex items-center gap-2">
               <span className="h-2 w-2 bg-emerald-500 rounded-full animate-pulse" /> Hasil sudah diumumkan!
             </p>
-            <Link href="/hasil" className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-4 py-1.5 font-bold text-xs whitespace-nowrap shadow">
-              Lihat Hasil →
-            </Link>
+            <div className="flex gap-2">
+              <button onClick={() => setShowResultPopup(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-4 py-1.5 font-bold text-xs whitespace-nowrap shadow">
+                Lihat Pop-up
+              </button>
+              <Link href="/hasil" className="bg-white border border-emerald-300 text-emerald-700 hover:bg-emerald-50 rounded-full px-4 py-1.5 font-bold text-xs whitespace-nowrap shadow">
+                Halaman Lengkap →
+              </Link>
+            </div>
           </div>
         )}
         {/* Step indicator */}
@@ -422,6 +457,67 @@ export default function VoterPage() {
         <span>•</span>
         <Link href="/hasil" className="hover:text-slate-600 underline">Lihat Hasil</Link>
       </div>
+
+      {/* Pop-up Hasil 3 Paslon — opsi popup dipindah/halaman lain */}
+      {showResultPopup && resultVisible && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden animate-[fadeIn_0.25s] my-8">
+            <div className="bg-gradient-to-r from-[#1e3a8a] to-[#1d4ed8] text-white p-4 flex justify-between items-start gap-3">
+              <div>
+                <p className="text-[11px] font-bold tracking-widest uppercase text-blue-200">Hasil Resmi • Transparan</p>
+                <h3 className="font-extrabold leading-tight mt-1">Perolehan Suara — 3 Paslon</h3>
+                <p className="text-xs text-blue-100 mt-1">
+                  {popupIsComplete ? `Semua ${popupTotalVoters} sudah memilih • ` : ""}{popupTotalVotes} suara masuk • {popupTotalVoters ? Math.round((popupVotedCount / popupTotalVoters) * 100) : 0}% partisipasi
+                </p>
+              </div>
+              <button onClick={() => setShowResultPopup(false)} className="h-8 w-8 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white shrink-0">✕</button>
+            </div>
+
+            <div className="p-4 md:p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+              {popupResults.length === 0 ? (
+                <p className="text-center text-sm text-slate-500 py-8">Belum ada data paslon.</p>
+              ) : (
+                <>
+                  {/* Ringkas 3 paslon foto + persentase */}
+                  <div className="grid gap-3">
+                    {[...popupResults].sort((a,b)=>b.voteCount-a.voteCount).map((r, idx) => {
+                      const pct = popupTotalVotes ? Math.round((r.voteCount / popupTotalVotes) * 100) : 0;
+                      const isWinner = idx===0 && popupTotalVotes>0;
+                      return (
+                        <div key={r.id} className={`flex gap-3 items-center border rounded-xl p-3 ${isWinner ? "bg-amber-50 border-amber-200" : "bg-slate-50 border-slate-200"}`}>
+                          <div className={`h-9 w-9 rounded-xl flex items-center justify-center font-black text-xs shrink-0 ${isWinner ? "bg-amber-400 text-amber-900" : "bg-white border text-slate-600"}`}>{idx+1}</div>
+                          {r.photoUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={r.photoUrl} alt={`Paslon ${r.number}`} className="h-14 w-14 rounded-xl object-cover border shrink-0" />
+                          ) : (
+                            <div className="h-14 w-14 rounded-xl bg-white border flex items-center justify-center shrink-0">🖼️</div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-slate-900 text-sm truncate">No. {r.number} — {r.chairName} & {r.viceName} {isWinner && <span className="ml-1 text-[10px] bg-amber-400 text-amber-900 rounded-full px-1.5 py-0.5">Unggul</span>}</p>
+                            <div className="w-full bg-white rounded-full h-2 mt-1.5 overflow-hidden border">
+                              <div className={`h-2 rounded-full ${isWinner ? "bg-amber-400" : "bg-[#1d4ed8]"}`} style={{ width: `${pct}%` }} />
+                            </div>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="font-black text-slate-900 text-sm">{r.voteCount}</p>
+                            <p className="text-xs font-bold text-slate-500">{pct}%</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[11px] text-slate-400 text-center">Data live dari /hasil • Suara anonim</p>
+                </>
+              )}
+            </div>
+
+            <div className="bg-slate-50 border-t p-4 flex flex-col sm:flex-row gap-2 justify-between">
+              <button onClick={() => setShowResultPopup(false)} className="order-2 sm:order-1 border border-slate-200 bg-white hover:bg-slate-50 rounded-full px-5 py-2 text-sm font-semibold">Tutup</button>
+              <Link href="/hasil" className="order-1 sm:order-2 bg-[#1d4ed8] hover:bg-[#1e3a8a] text-white rounded-full px-5 py-2 text-sm font-bold text-center">Buka Halaman Lengkap /hasil →</Link>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
