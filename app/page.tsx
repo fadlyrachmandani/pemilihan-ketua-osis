@@ -192,12 +192,12 @@ export default function VoterPage() {
           <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
           <span className="text-xs font-semibold tracking-widest text-slate-600 uppercase">SMAN 1 Rambutan • TPS Digital</span>
         </div>
-        <div className="flex justify-center mb-4">
+        <div className="flex justify-center mb-5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/logo-sman1-rambutan.png"
             alt="Logo SMAN 1 Rambutan"
-            className="h-24 w-24 md:h-28 md:w-28 object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.15)]"
+            className="h-36 w-36 sm:h-40 sm:w-40 md:h-44 md:w-44 object-contain drop-shadow-[0_6px_18px_rgba(0,0,0,0.18)]"
           />
         </div>
         <h1 className="text-[1.7rem] md:text-3xl font-extrabold tracking-tight text-slate-900 max-w-3xl mx-auto leading-tight">
