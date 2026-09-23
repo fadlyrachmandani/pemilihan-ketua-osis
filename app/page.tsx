@@ -163,14 +163,13 @@ export default function VoterPage() {
           <span className="text-xs font-semibold tracking-widest text-slate-600 uppercase">SMAN 1 Rambutan • TPS Digital</span>
         </div>
         <div className="flex justify-center mb-4">
-          <div className="h-24 w-24 md:h-28 md:w-28 rounded-2xl bg-white border border-slate-100 shadow-md p-1.5 flex items-center justify-center overflow-hidden">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/logo-sman1-rambutan.jpeg"
-              alt="Logo SMAN 1 Rambutan"
-              className="h-full w-full object-contain rounded-xl"
-            />
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo-sman1-rambutan.jpeg"
+            alt="Logo SMAN 1 Rambutan"
+            className="h-24 w-24 md:h-28 md:w-28 object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.12)]"
+            style={{ mixBlendMode: "multiply" }}
+          />
         </div>
         <h1 className="text-[1.7rem] md:text-3xl font-extrabold tracking-tight text-slate-900 max-w-3xl mx-auto leading-tight">
           {title}
