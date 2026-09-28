@@ -308,7 +308,7 @@ function KandidatTab() {
               {photoPreview ? (
                 <div className="space-y-2">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={photoPreview} alt="Preview" className="mx-auto h-28 w-28 object-cover rounded-xl border-2 border-white shadow" />
+                  <img src={photoPreview} alt="Preview" className="mx-auto h-28 w-28 object-contain bg-white rounded-xl border-2 border-white shadow" />
                   <p className="text-xs font-medium text-slate-700 truncate">{photoFile?.name}</p>
                   <p className="text-[11px] text-slate-500">{photoFile ? (photoFile.size / 1024).toFixed(0) + " KB" : ""} • langsung terupload ke Vercel Blob (permanen)</p>
                   <div className="flex gap-2 justify-center">
@@ -344,7 +344,7 @@ function KandidatTab() {
               {form.photoUrl && !photoFile && (
                 <div className="mt-2">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={form.photoUrl} alt="preview url" className="h-20 w-full object-cover rounded-lg border" onError={(e) => (e.currentTarget.style.display = "none")} />
+                  <img src={form.photoUrl} alt="preview url" className="h-24 w-full object-contain bg-slate-50 rounded-lg border" onError={(e) => (e.currentTarget.style.display = "none")} />
                 </div>
               )}
             </details>
@@ -381,7 +381,7 @@ function KandidatTab() {
             <div key={c.id} className="bg-white border border-slate-100 shadow-sm rounded-2xl overflow-hidden group">
               {c.photoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={c.photoUrl} alt={`Paslon ${c.number}`} className="w-full h-44 object-cover group-hover:scale-[1.02] transition" />
+                <img src={c.photoUrl} alt={`Paslon ${c.number}`} className="w-full aspect-[4/3] object-contain bg-slate-100 group-hover:scale-[1.02] transition" />
               ) : (
                 <div className="w-full h-44 bg-gradient-to-br from-slate-100 to-slate-200 flex flex-col items-center justify-center text-slate-400 gap-1">
                   <span className="text-2xl">🖼️</span><span className="text-xs">No Foto</span>

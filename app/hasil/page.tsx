@@ -244,7 +244,7 @@ export default function HasilPage() {
                       <div key={r.id} className={`flex flex-col items-center gap-2 ${isWinner ? "order-2 md:order-2" : idx === 1 ? "order-1 md:order-1" : "order-3"}`}>
                         {r.photoUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={r.photoUrl} alt={`Paslon ${r.number}`} className={`w-20 h-20 md:w-24 md:h-24 object-cover rounded-2xl border-4 ${isWinner ? "border-amber-300" : "border-white/30"} shadow`} />
+                          <img src={r.photoUrl} alt={`Paslon ${r.number}`} className={`w-20 h-20 md:w-24 md:h-24 object-contain bg-white/20 rounded-2xl border-4 ${isWinner ? "border-amber-300" : "border-white/30"} shadow`} />
                         ) : (
                           <div className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl ${isWinner ? "bg-amber-300" : "bg-white/20"} flex items-center justify-center text-xl`}>👤</div>
                         )}
@@ -277,7 +277,7 @@ export default function HasilPage() {
                     </div>
                     {r.photoUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={r.photoUrl} alt={`Paslon ${r.number}`} className="h-14 w-14 object-cover rounded-xl border shrink-0" />
+                      <img src={r.photoUrl} alt={`Paslon ${r.number}`} className="h-14 w-14 object-contain bg-slate-100 rounded-xl border shrink-0" />
                     ) : (
                       <div className="h-14 w-14 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">🖼️</div>
                     )}

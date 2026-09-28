@@ -361,10 +361,10 @@ export default function VoterPage() {
                     <img
                       src={c.photoUrl}
                       alt={`Foto paslon ${c.number}`}
-                      className="w-full h-56 object-cover"
+                      className="w-full aspect-[4/3] object-contain bg-slate-100"
                     />
                   ) : (
-                    <div className="w-full h-56 bg-gradient-to-br from-slate-100 to-slate-200 flex flex-col items-center justify-center text-slate-400 gap-2">
+                    <div className="w-full aspect-[4/3] bg-gradient-to-br from-slate-100 to-slate-200 flex flex-col items-center justify-center text-slate-400 gap-2">
                       <span className="text-3xl">🖼️</span>
                       <span className="text-xs">Foto belum tersedia</span>
                     </div>
@@ -488,7 +488,7 @@ export default function VoterPage() {
                           <div className={`h-9 w-9 rounded-xl flex items-center justify-center font-black text-xs shrink-0 ${isWinner ? "bg-amber-400 text-amber-900" : "bg-white border text-slate-600"}`}>{idx+1}</div>
                           {r.photoUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img src={r.photoUrl} alt={`Paslon ${r.number}`} className="h-14 w-14 rounded-xl object-cover border shrink-0" />
+                            <img src={r.photoUrl} alt={`Paslon ${r.number}`} className="h-14 w-14 rounded-xl object-contain bg-slate-100 border shrink-0" />
                           ) : (
                             <div className="h-14 w-14 rounded-xl bg-white border flex items-center justify-center shrink-0">🖼️</div>
                           )}
