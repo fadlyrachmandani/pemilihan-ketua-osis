@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isAdminAuthenticated } from "@/lib/auth";
 import { isBlobConfigured, saveCandidatePhoto } from "@/lib/storage";
+import { apiError } from "@/lib/api-error";
 
 export const dynamic = "force-dynamic";
 
@@ -9,8 +10,12 @@ export async function GET() {
   if (!isAdminAuthenticated()) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
+  try {
   const candidates = await prisma.candidate.findMany({ orderBy: { number: "asc" } });
   return NextResponse.json({ candidates });
+  } catch (e) {
+    return apiError(e, "Gagal memuat paslon.", { detail: true });
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -88,6 +93,6 @@ export async function POST(req: NextRequest) {
         { status: 409 }
       );
     }
-    throw e;
+    return apiError(e, "Gagal menambah paslon.", { detail: true });
   }
 }

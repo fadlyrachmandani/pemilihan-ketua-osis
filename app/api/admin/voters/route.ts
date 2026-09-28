@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isAdminAuthenticated } from "@/lib/auth";
+import { apiError } from "@/lib/api-error";
 
 export async function GET() {
   if (!isAdminAuthenticated()) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
+  try {
   const voters = await prisma.voter.findMany({ orderBy: { name: "asc" } });
   return NextResponse.json({ voters });
+  } catch (e) {
+    return apiError(e, "Gagal memuat pemilih.", { detail: true });
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -38,6 +43,6 @@ export async function POST(req: NextRequest) {
     if (e.code === "P2002") {
       return NextResponse.json({ message: "NISN sudah terdaftar." }, { status: 409 });
     }
-    throw e;
+    return apiError(e, "Gagal menambah pemilih.", { detail: true });
   }
 }

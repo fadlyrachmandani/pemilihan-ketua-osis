@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { apiError } from "@/lib/api-error";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
+  try {
   const body = await req.json();
   const rawNisn = body.nisn ?? body.nis ?? "";
   const nisn = String(rawNisn ?? "").trim();
@@ -55,9 +57,12 @@ export async function POST(req: NextRequest) {
     });
   } catch (e: any) {
     // rollback hasVoted jika vote gagal (jarang)
-    await prisma.voter.update({ where: { id: voter.id }, data: { hasVoted: false, votedAt: null } });
-    throw e;
+    await prisma.voter.update({ where: { id: voter.id }, data: { hasVoted: false, votedAt: null } }).catch(() => {});
+    return apiError(e, "Gagal menyimpan suara. Coba lagi.");
   }
 
   return NextResponse.json({ success: true });
+  } catch (e) {
+    return apiError(e, "Gagal mengirim suara. Coba lagi.");
+  }
 }

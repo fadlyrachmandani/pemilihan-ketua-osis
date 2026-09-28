@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { apiError } from "@/lib/api-error";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  try {
   const settings = await prisma.electionSettings.findUnique({ where: { id: 1 } });
 
   // Selalu hitung partisipasi — dipakai publik saat voting berlangsung
@@ -63,4 +65,7 @@ export async function GET() {
   });
   res.headers.set("Cache-Control", "public, max-age=3, s-maxage=3, stale-while-revalidate=5");
   return res;
+  } catch (e) {
+    return apiError(e, "Gagal memuat hasil. Coba lagi.");
+  }
 }

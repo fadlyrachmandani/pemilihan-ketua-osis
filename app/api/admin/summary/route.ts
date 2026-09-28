@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isAdminAuthenticated } from "@/lib/auth";
+import { apiError } from "@/lib/api-error";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +10,7 @@ export async function GET() {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
+  try {
   const [totalVoters, votedCount, totalVotes, totalCandidates] = await Promise.all([
     prisma.voter.count(),
     prisma.voter.count({ where: { hasVoted: true } }),
@@ -26,4 +28,7 @@ export async function GET() {
   // cache 3 detik biar polling tidak hantam DB tiap detik
   res.headers.set("Cache-Control", "private, max-age=3, stale-while-revalidate=5");
   return res;
+  } catch (e) {
+    return apiError(e, "Gagal memuat ringkasan.", { detail: true });
+  }
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { apiError } from "@/lib/api-error";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +10,7 @@ function normalizeNisn(v: any): string {
 }
 
 export async function POST(req: NextRequest) {
+  try {
   const body = await req.json();
   const raw = body.nisn ?? body.nis ?? "";
   const nisn = normalizeNisn(raw);
@@ -57,4 +59,7 @@ export async function POST(req: NextRequest) {
     voterName: voter.name,
     candidates,
   });
+  } catch (e) {
+    return apiError(e, "Gagal verifikasi NISN. Coba lagi.");
+  }
 }
