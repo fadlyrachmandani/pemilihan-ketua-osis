@@ -420,6 +420,9 @@ function HasilTab() {
   const [results, setResults] = useState<ResultRow[]>([]);
   const [visible, setVisible] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [totalVoters, setTotalVoters] = useState(0);
+  const [votedCount, setVotedCount] = useState(0);
+  const [notVotedCount, setNotVotedCount] = useState(0);
 
   const load = useCallback(async () => {
     const res = await fetch("/api/admin/results");
@@ -427,6 +430,9 @@ function HasilTab() {
       const data = await readJsonSafe(res);
       setResults(data.results || []);
       setVisible(!!data.resultVisible);
+      setTotalVoters(data.totalVoters ?? 0);
+      setVotedCount(data.votedCount ?? 0);
+      setNotVotedCount(data.notVotedCount ?? 0);
     }
   }, []);
 
@@ -453,6 +459,7 @@ function HasilTab() {
 
   const totalVotes = results.reduce((sum, r) => sum + r.voteCount, 0);
   const sortedPreview = [...results].sort((a,b)=>b.voteCount-a.voteCount);
+  const pctPartisipasi = totalVoters > 0 ? Math.round((votedCount / totalVoters) * 100) : 0;
 
   return (
     <div className="space-y-4">
@@ -495,6 +502,37 @@ function HasilTab() {
         </div>
       )}
 
+      {!visible ? (
+        <div className="bg-white border border-slate-100 shadow-sm rounded-2xl p-6 md:p-8">
+          <div className="flex items-center gap-3">
+            <div className="h-11 w-11 rounded-xl bg-amber-100 flex items-center justify-center text-xl shrink-0">🙈</div>
+            <div>
+              <p className="font-bold text-slate-800">Hasil disembunyikan dari publik</p>
+              <p className="text-xs text-slate-500 mt-0.5">Yang tampil di sini hanya progres pemungutan suara. Per-calon + persen baru muncul setelah klik Tampilkan Hasil.</p>
+            </div>
+          </div>
+          <div className="mt-5 bg-slate-50 border border-slate-200 rounded-2xl p-5">
+            <div className="flex justify-between items-end gap-3">
+              <div>
+                <p className="text-xs font-bold tracking-widest uppercase text-slate-400">Sudah Memilih</p>
+                <p className="text-3xl font-black text-slate-900 mt-1">
+                  {votedCount} <span className="text-lg font-semibold text-slate-500">/ {totalVoters}</span>
+                </p>
+                <p className="text-xs text-slate-500 mt-1">
+                  {notVotedCount > 0 ? `${notVotedCount} belum memilih` : totalVoters === 0 ? "Belum ada data pemilih" : "Semua sudah memilih!"}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-3xl font-black text-[#1d4ed8]">{pctPartisipasi}%</p>
+                <p className="text-xs font-semibold text-slate-500">partisipasi</p>
+              </div>
+            </div>
+            <div className="w-full bg-slate-200 rounded-full h-3 mt-4 overflow-hidden">
+              <div className="bg-gradient-to-r from-emerald-500 to-[#1d4ed8] h-3 rounded-full transition-all duration-700" style={{ width: `${pctPartisipasi}%` }} />
+            </div>
+          </div>
+        </div>
+      ) : (
       <div className="bg-white border border-slate-100 shadow-sm rounded-2xl divide-y">
         {sortedPreview
           .map((r, idx) => {
@@ -522,6 +560,7 @@ function HasilTab() {
         )}
         {totalVotes > 0 && <div className="p-4 text-center text-xs text-slate-500">Total {totalVotes} suara • Preview sama seperti di /hasil & pop-up / • <a href="/hasil" target="_blank" className="underline text-[#1d4ed8]">Buka /hasil</a></div>}
       </div>
+      )}
     </div>
   );
 }
