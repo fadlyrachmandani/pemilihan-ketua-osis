@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isAdminAuthenticated } from "@/lib/auth";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
+import { isBlobConfigured, saveCandidatePhoto } from "@/lib/storage";
 
 export const dynamic = "force-dynamic";
-import { randomUUID } from "crypto";
 
 export async function GET() {
   if (!isAdminAuthenticated()) {
@@ -39,35 +37,18 @@ export async function POST(req: NextRequest) {
     const file = form.get("file") as File | null;
     const photoUrlField = form.get("photoUrl") as string | null;
     if (file && file.size > 0) {
-      // validasi & simpan file langsung di POST ini
-      const MAX_SIZE = 5 * 1024 * 1024;
-      if (file.size > MAX_SIZE) {
-        return NextResponse.json({ message: "Ukuran foto maksimal 5MB." }, { status: 400 });
-      }
-      const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      let ext = path.extname(file.name || "").toLowerCase();
-      if (!ext) {
-        const map: Record<string, string> = {
-          "image/jpeg": ".jpg",
-          "image/jpg": ".jpg",
-          "image/png": ".png",
-          "image/webp": ".webp",
-          "image/gif": ".gif",
-        };
-        ext = map[file.type] || ".jpg";
-      }
-      if (![".jpg", ".jpeg", ".png", ".webp", ".gif"].includes(ext)) ext = ".jpg";
-      const filename = `${Date.now()}-${randomUUID().slice(0, 8)}${ext}`;
-      const uploadDir = path.join(process.cwd(), "public", "uploads");
+      // Upload beneran: ke Vercel Blob kalau token ada, fallback ke public/uploads saat lokal
       try {
-        await mkdir(uploadDir, { recursive: true });
-        await writeFile(path.join(uploadDir, filename), buffer);
-        photoUrl = `/uploads/${filename}`;
+        const saved = await saveCandidatePhoto(file);
+        photoUrl = saved.url;
       } catch (e: any) {
-        if (e.code === "EROFS" || e.message?.includes("read-only")) {
+        if (e.message?.includes("read-only") || e.code === "EROFS" || e.message?.includes("EROFS")) {
           return NextResponse.json(
-            { message: "Upload gagal di Vercel (read-only). Gunakan URL foto manual atau Vercel Blob." },
+            {
+              message:
+                "Upload gagal: filesystem Vercel read-only dan Blob belum dikonfigurasi. Buat Blob Store di Vercel lalu isi BLOB_READ_WRITE_TOKEN, atau pakai URL foto manual untuk sementara.",
+              blobConfigured: isBlobConfigured(),
+            },
             { status: 500 }
           );
         }

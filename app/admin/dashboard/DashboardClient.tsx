@@ -309,7 +309,7 @@ function KandidatTab() {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={photoPreview} alt="Preview" className="mx-auto h-28 w-28 object-cover rounded-xl border-2 border-white shadow" />
                   <p className="text-xs font-medium text-slate-700 truncate">{photoFile?.name}</p>
-                  <p className="text-[11px] text-slate-500">{photoFile ? (photoFile.size / 1024).toFixed(0) + " KB" : ""} • akan disimpan ke /uploads</p>
+                  <p className="text-[11px] text-slate-500">{photoFile ? (photoFile.size / 1024).toFixed(0) + " KB" : ""} • langsung terupload ke Vercel Blob (permanen)</p>
                   <div className="flex gap-2 justify-center">
                     <button type="button" onClick={clearPhoto} className="text-xs border border-slate-200 bg-white rounded-full px-3 py-1">Hapus</button>
                     <button type="button" onClick={() => photoInputRef.current?.click()} className="text-xs border border-slate-200 bg-white rounded-full px-3 py-1">Ganti</button>
