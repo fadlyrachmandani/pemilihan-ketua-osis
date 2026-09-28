@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { readJsonSafe, httpErrorMessage, parseJsonTextSafe } from "@/lib/api-client";
 
 type Candidate = {
   id: string;
@@ -48,7 +49,7 @@ export default function VoterPage() {
     async function checkResults() {
       try {
         const res = await fetch("/api/results", { cache: "no-store" });
-        const data = await res.json();
+        const data = await readJsonSafe(res);
         if (cancelled) return;
         const visible = !!data.resultVisible;
         setResultVisible(visible);
@@ -121,13 +122,13 @@ export default function VoterPage() {
           }
         } catch {}
         // tampilkan error asli
-        setError(JSON.parse(text).message || "NISN tidak valid.");
+        setError(httpErrorMessage(res.status, parseJsonTextSafe(text), "NISN tidak valid."));
         setLoading(false);
         return;
       }
-      const data = await res.json();
+      const data = await readJsonSafe(res);
       if (!res.ok) {
-        setError(data.message || "NISN tidak valid.");
+        setError(httpErrorMessage(res.status, data, "NISN tidak valid."));
         setLoading(false);
         return;
       }
@@ -160,9 +161,9 @@ export default function VoterPage() {
           candidateId: selected.id,
         }),
       });
-      const data = await res.json();
+      const data = await readJsonSafe(res);
       if (!res.ok) {
-        setError(data.message || "Gagal mengirim suara.");
+        setError(httpErrorMessage(res.status, data, "Gagal mengirim suara."));
         setLoading(false);
         return;
       }

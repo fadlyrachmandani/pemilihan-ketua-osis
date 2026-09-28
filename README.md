@@ -63,7 +63,7 @@ npm run dev
 ## 4. Alur Sebelum Hari-H
 
 1. Login ke dashboard admin
-2. Tab **Kandidat** — masukkan paslon, **upload foto langsung** (drag & drop, JPG/PNG/WEBP max 5MB). Atau tempel URL manual jika pakai link eksternal.
+2. Tab **Kandidat** — masukkan paslon, **upload foto langsung** (drag & drop, JPG/PNG/WEBP max 4MB karena limit Vercel). Atau tempel URL manual jika pakai link eksternal.
 3. Tab **Data Pemilih** — **impor Excel** langsung: upload file Dapodik `No | Nama | NIPD | JK | NISN` (661 baris) tanpa edit — baris meta otomatis di-skip, NISN 9-digit auto jadi 10-digit. Atau pakai template `nisn,name`. Bisa juga tambah satu-satu (NISN 10 digit).
 
 ## 5. Alur Hari-H
@@ -101,4 +101,4 @@ npm run dev
 - Suara disimpan **tanpa** dikaitkan ke identitas pemilih (tabel `Vote` terpisah dari `Voter`) — status "sudah memilih" dicatat, tapi pilihannya tetap rahasia
 - Ganti `ADMIN_PASSWORD` dan `SESSION_SECRET` di `.env` sebelum deploy, jangan pakai nilai contoh. Cookie admin httpOnly 8 jam, HMAC `timingSafeEqual`.
 - Pastikan NISN di data sekolah memang unik per siswa — kalau ada duplikat, impor Excel akan skip (duplikat di-file & di-DB) + laporan `invalid` untuk 9-digit/ kosong
-- Upload foto & Excel max 5MB, hanya `image/*` & `.xlsx/.xls`, validasi server side
+- Upload foto max 4MB & Excel max 5MB, hanya `image/*` & `.xlsx/.xls`, validasi server side

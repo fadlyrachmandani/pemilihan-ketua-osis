@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { readJsonSafe, httpErrorMessage } from "@/lib/api-client";
 
 export default function AdminLoginPage() {
   const [password, setPassword] = useState("");
@@ -20,9 +21,9 @@ export default function AdminLoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password }),
       });
-      const data = await res.json();
+      const data = await readJsonSafe(res);
       if (!res.ok) {
-        setError(data.message || "Gagal login.");
+        setError(httpErrorMessage(res.status, data, "Gagal login."));
         setLoading(false);
         return;
       }

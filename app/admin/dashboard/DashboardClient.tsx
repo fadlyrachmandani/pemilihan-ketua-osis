@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { readJsonSafe, httpErrorMessage } from "@/lib/api-client";
 
 type Tab = "ringkasan" | "kandidat" | "hasil" | "pemilih";
 
@@ -114,7 +115,7 @@ function RingkasanTab() {
 
   const load = useCallback(async () => {
     const res = await fetch("/api/admin/summary");
-    if (res.ok) setSummary(await res.json());
+    if (res.ok) setSummary(await readJsonSafe(res));
   }, []);
 
   useEffect(() => {
@@ -174,8 +175,8 @@ function KandidatTab() {
   const load = useCallback(async () => {
     const res = await fetch("/api/admin/candidates");
     if (res.ok) {
-      const data = await res.json();
-      setCandidates(data.candidates);
+      const data = await readJsonSafe(res);
+      setCandidates(data.candidates || []);
     }
   }, []);
 
@@ -199,8 +200,8 @@ function KandidatTab() {
       setError("File harus berupa gambar (jpg, png, webp).");
       return;
     }
-    if (f.size > 5 * 1024 * 1024) {
-      setError("Ukuran foto maksimal 5MB.");
+    if (f.size > 4 * 1024 * 1024) {
+      setError("Ukuran foto maksimal 4MB (limit Vercel). Kompres/perkecil dulu.");
       return;
     }
     setError(null);
@@ -242,9 +243,9 @@ function KandidatTab() {
           body: JSON.stringify(form),
         });
       }
-      const data = await res.json();
+      const data = await readJsonSafe(res);
       if (!res.ok) {
-        setError(data.message || "Gagal menambah paslon.");
+        setError(httpErrorMessage(res.status, data, "Gagal menambah paslon."));
       } else {
         setForm({ number: "", chairName: "", viceName: "", photoUrl: "", vision: "", mission: "" });
         clearPhoto();
@@ -321,7 +322,7 @@ function KandidatTab() {
                   <p className="text-sm font-medium text-slate-700">Upload foto paslon</p>
                   <p className="text-xs text-slate-500">Drag & drop atau klik pilih file</p>
                   <button type="button" onClick={() => photoInputRef.current?.click()} className="mt-2 bg-white border border-slate-200 hover:bg-slate-50 rounded-full px-4 py-1.5 text-xs font-semibold shadow-sm">Pilih Foto</button>
-                  <p className="text-[11px] text-slate-400 mt-2">JPG/PNG/WEBP, maks 5MB, rasio 1:1 atau 4:5 bagus</p>
+                  <p className="text-[11px] text-slate-400 mt-2">JPG/PNG/WEBP, maks 4MB, rasio 1:1 atau 4:5 bagus</p>
                 </>
               )}
             </div>
@@ -423,9 +424,9 @@ function HasilTab() {
   const load = useCallback(async () => {
     const res = await fetch("/api/admin/results");
     if (res.ok) {
-      const data = await res.json();
-      setResults(data.results);
-      setVisible(data.resultVisible);
+      const data = await readJsonSafe(res);
+      setResults(data.results || []);
+      setVisible(!!data.resultVisible);
     }
   }, []);
 
@@ -540,8 +541,8 @@ function PemilihTab() {
   const load = useCallback(async () => {
     const res = await fetch("/api/admin/voters");
     if (res.ok) {
-      const data = await res.json();
-      setVoters(data.voters);
+      const data = await readJsonSafe(res);
+      setVoters(data.voters || []);
     }
   }, []);
 
@@ -564,9 +565,9 @@ function PemilihTab() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ nisn, name: form.name.trim() }),
     });
-    const data = await res.json();
+    const data = await readJsonSafe(res);
     if (!res.ok) {
-      setError(data.message);
+      setError(httpErrorMessage(res.status, data, "Gagal menambah pemilih."));
     } else {
       setForm({ nisn: "", name: "" });
       await load();
@@ -585,9 +586,9 @@ function PemilihTab() {
         method: "POST",
         body: fd,
       });
-      const data = await res.json();
+      const data = await readJsonSafe(res);
       if (!res.ok) {
-        setImportMsg(data.message || "Gagal impor.");
+        setImportMsg(httpErrorMessage(res.status, data, "Gagal impor."));
         setImportDetail(data);
       } else {
         setImportMsg(`Berhasil ${data.createdCount} • Duplikat ${data.skippedCount} • Invalid ${data.invalidCount ?? 0}`);

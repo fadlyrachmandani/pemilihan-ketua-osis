@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { readJsonSafe } from "@/lib/api-client";
 
 type Result = {
   id: string;
@@ -26,7 +27,7 @@ export default function HasilPage() {
   const load = useCallback(async () => {
     try {
       const res = await fetch("/api/results", { cache: "no-store" });
-      const data = await res.json();
+      const data = await readJsonSafe(res);
       // API selalu kirim totalVoters/votedCount bahkan saat belum reveal
       setTotalVoters(data.totalVoters ?? 0);
       setVotedCount(data.votedCount ?? 0);
