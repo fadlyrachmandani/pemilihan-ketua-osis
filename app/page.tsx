@@ -43,6 +43,7 @@ export default function VoterPage() {
   const [popupIsComplete, setPopupIsComplete] = useState(false);
   const [showResultPopup, setShowResultPopup] = useState(false);
   const [hasAutoShown, setHasAutoShown] = useState(false);
+  const [showThanksModal, setShowThanksModal] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -168,6 +169,8 @@ export default function VoterPage() {
         return;
       }
       setStage("done");
+      setConfirming(false);
+      setShowThanksModal(true);
     } catch {
       setError("Terjadi kesalahan koneksi. Coba lagi.");
     } finally {
@@ -181,6 +184,7 @@ export default function VoterPage() {
     setCandidates([]);
     setSelected(null);
     setConfirming(false);
+    setShowThanksModal(false);
     setError(null);
     setStage("nisn");
   }
@@ -449,6 +453,39 @@ export default function VoterPage() {
           >
             Selesai — siap pemilih berikutnya →
           </button>
+        </div>
+      )}
+
+      {showThanksModal && stage === "done" && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="relative bg-white rounded-2xl p-6 md:p-8 max-w-sm w-full text-center space-y-4 shadow-2xl animate-[fadeIn_0.25s]">
+            <button
+              onClick={() => setShowThanksModal(false)}
+              aria-label="Tutup"
+              className="absolute top-3 right-3 h-8 w-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500"
+            >
+              ✕
+            </button>
+            <div className="mx-auto h-16 w-16 rounded-full bg-emerald-100 flex items-center justify-center text-3xl">
+              ✅
+            </div>
+            <div>
+              <p className="text-xl font-extrabold text-slate-900 leading-snug">
+                Terima kasih telah menggunakan hak suara anda
+              </p>
+              <p className="text-sm text-slate-500 mt-2">
+                Suara <span className="font-semibold text-slate-700">{voterName || "kamu"}</span>{" "}
+                berhasil dicatat dan tidak dapat diubah kembali.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowThanksModal(false)}
+              autoFocus
+              className="w-full bg-gradient-to-br from-[#1d4ed8] to-[#1e3a8a] text-white rounded-xl py-3 font-bold shadow-lg shadow-blue-500/20 hover:opacity-95"
+            >
+              OK, Selesai
+            </button>
+          </div>
         </div>
       )}
 
